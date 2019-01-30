@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style> p{
+        padding-left: 50%;
+        padding-top: 15%;
+    }</style>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<p class="balloon">🎈</p>
+
+<script>
+  function koko(valueWithUnit, unit) {
+    return parseInt(valueWithUnit.split(unit)[0]);
+  }
+
+  function balloon(event) {
+
+    if (event.keyCode === 40) {
+      kasva('.balloon', 1.05, 'down');
+    } else if (event.keyCode === 38) {
+      kasva('.balloon', 1.05);
+    } }
+
+
+  function kasva(pallo, maara, suunta) {
+    pallo = document.querySelector(pallo);
+    let pikseli = window.getComputedStyle(pallo).fontSize;
+    let uusiKoko = koko(pikseli, 'px');
+
+    if (suunta === undefined) {
+      uusiKoko *= maara;
+    } else uusiKoko /= maara;
+
+    if (uusiKoko <= 100) {
+
+      uusiKoko = Math.ceil(uusiKoko) + 'px';
+      pallo.style.fontSize = uusiKoko;
+    } else poks(pallo);
+  }
+
+  function poks(pallo) {
+    pallo.firstChild.nodeValue = '💥';
+
+  }
+
+  document.addEventListener('keydown', balloon);
+
+
+</script>
+</body>
+</html>
