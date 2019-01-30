@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body {
+            height: 200px;
+            background: beige;
+        }
+        .dot {
+            height: 8px; width: 8px;
+            border-radius: 4px; /* rounds corners */
+            background: #ff13b0;
+            position: absolute;
+        }
+        dot { position: absolute; display: block;
+            border: 2px solid red; border-radius: 50px;
+            height: 500px; width: 100px; }
+        #progress {
+            border-bottom: 10px solid #bbff2c;
+            width: 100px;
+            position: fixed;
+            top: 0; left: 0;
+        }
+        .balloon{
+            margin-left: 1000px;
+        }
+    </style>
+</head>
+<body>
+<p>Click this document to activate the handler.</p>
+<button id="button">Click me</button>
+<button id="button1">Act-once button</button>
+<button id="button2">Click me any way you want</button>
+
+    <p id="parag">A paragraph with a <button id="button3">mousedown</button>.</p>
+
+<button id="a">A</button>
+<button id="b">B</button>
+<button id="c">C</button>
+<a href="https://developer.mozilla.org/">MDN</a>
+<p>This page turns red when you hold the V key.</p>
+
+<p>Press Control-Space to continue.</p>
+
+<p>Drag the bar to change its width:</p>
+<div style="background: #ff111d; width: 60px; height: 20px">
+</div>
+<p>Touch this page</p>
+
+<div id="progress"></div>
+
+<p>Name: <input type="text" data-help="Your full name"></p>
+<p>Age: <input type="text" data-help="Your age in years"></p>
+<p id="help"></p>
+<textarea>Type something here...</textarea>
+
+<p class="balloon">🎈</p>
+
+  <script>
+  window.addEventListener("click", () => {
+   // console.log("haloooo?");
+  });
+
+  let button = document.querySelector("#button");
+  button.addEventListener("click", () => {
+    console.log("Nappula hallussa");
+  });
+
+  let button1 = document.querySelector("#button1");
+  function once() {
+    console.log("mitähän tässä tapahtuu.");
+    button1.removeEventListener("click", once);
+  }
+  button1.addEventListener("click", once);
+
+  let button2 = document.querySelector("#button2");
+  button2.addEventListener("mousedown", event => {
+    if (event.button == 0) {
+      console.log("Left button");
+    } else if (event.button == 1) {
+      console.log("Middle button");
+    } else if (event.button == 2) {
+      console.log("Right button");
+    }
+  });
+
+  let para = document.querySelector("#parag");
+  let button3 = document.querySelector("#button3");
+  para.addEventListener("mousedown", () => {
+    console.log("Handler for paragraph.");
+  });
+  button3.addEventListener("mousedown", event => {
+    console.log("Handler for button.");
+    if (event.button == 2) event.stopPropagation();
+  });
+
+  document.body.addEventListener("click", event => {
+    if (event.target.nodeName == "BUTTON") {
+      console.log("Clicked", event.target.textContent);
+    }
+  });
+
+  let link = document.querySelector("a");
+  link.addEventListener("click", event => {
+    console.log("Nope.");
+    event.preventDefault();
+  });
+
+  window.addEventListener("keydown", event => {
+    if (event.key == "v") {
+      document.body.style.background = "red";
+    }
+  });
+  window.addEventListener("keyup", event => {
+    if (event.key == "v") {
+      document.body.style.background = "";
+    }
+  });
+
+  window.addEventListener("keydown", event => {
+    if (event.key == " " && event.ctrlKey) {
+      console.log("Continuing!");
+    }
+  });
+
+  window.addEventListener("click", event => {
+    let dot = document.createElement("div");
+    dot.className = "dot";
+    dot.style.left = (event.pageX - 4) + "px";
+    dot.style.top = (event.pageY - 4) + "px";
+    document.body.appendChild(dot);
+  });
+
+
+  let lastX; // Tracks the last observed mouse X position
+  let bar = document.querySelector("div");
+  bar.addEventListener("mousedown", event => {
+    if (event.button == 0) {
+      lastX = event.clientX;
+      window.addEventListener("mousemove", moved);
+      event.preventDefault(); // Prevent selection
+    }
+  });
+
+  function moved(event) {
+    if (event.buttons == 0) {
+      window.removeEventListener("mousemove", moved);
+    } else {
+      let dist = event.clientX - lastX;
+      let newWidth = Math.max(10, bar.offsetWidth + dist);
+      bar.style.width = newWidth + "px";
+      lastX = event.clientX;
+    }
+  }
+
+  function update(event) {
+    for (let dot; dot = document.querySelector("dot");) {
+      dot.remove();
+    }
+    for (let i = 0; i < event.touches.length; i++) {
+      let {pageX, pageY} = event.touches[i];
+      let dot = document.createElement("dot");
+      dot.style.left = (pageX - 50) + "px";
+      dot.style.top = (pageY - 50) + "px";
+      document.body.appendChild(dot);
+    }
+  }
+  window.addEventListener("touchstart", update);
+  window.addEventListener("touchmove", update);
+  window.addEventListener("touchend", update);
+
+  // Create some content
+  document.body.appendChild(document.createTextNode(
+      "TÄÄLTÄ PESEE ".repeat(1000)));
+
+  let bar2 = document.querySelector("#progress");
+  window.addEventListener("scroll", () => {
+    let max = document.body.scrollHeight - innerHeight;
+    bar2.style.width = `${(pageYOffset / max) * 100}%`;
+  });
+
+  let help = document.querySelector("#help");
+  let fields = document.querySelectorAll("input");
+  for (let field of Array.from(fields)) {
+    field.addEventListener("focus", event => {
+      let text = event.target.getAttribute("data-help");
+      help.textContent = text;
+    });
+    field.addEventListener("blur", event => {
+      help.textContent = "";
+    });
+  }
+
+  let bombTimer = setTimeout(() => {
+    console.log("BOOM!");
+  }, 1000);
+
+  if (Math.random() < 0.5) { // 50% chance
+    console.log("Defused.");
+    clearTimeout(bombTimer);
+  }
+
+  let ticks = 5;
+  let clock = setInterval(() => {
+    console.log("tiktak", ticks++);
+    if (ticks == 7) {
+      clearInterval(clock);
+      console.log("stop.");
+    }
+  }, 200);
+
+  let textarea = document.querySelector("textarea");
+  let timeout;
+  textarea.addEventListener("input", () => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => console.log("Typed!"), 500);
+  });
+
+  let scheduled = null;
+/*  window.addEventListener("mousemove", event => {
+    if (!scheduled) {
+      setTimeout(() => {
+        document.body.textContent =
+            `Mouse at ${scheduled.pageX}, ${scheduled.pageY}`;
+        scheduled = null;
+      }, 250);
+    }
+    scheduled = event;
+  }); */
+
+   function koko(valueWithUnit, unit) {
+    return parseInt(valueWithUnit.split(unit)[0]);
+  }
+
+  function balloon(event) {
+
+    if (event.keyCode === 40) {
+      kasva('.balloon', 1.05, 'down');
+    } else if (event.keyCode === 38) {
+      kasva('.balloon', 1.05);
+    } }
+
+
+  function kasva(pallo, maara, suunta) {
+    pallo = document.querySelector(pallo);
+    let pikseli = window.getComputedStyle(pallo).fontSize;
+    let uusiKoko = koko(pikseli, 'px');
+
+    if (suunta === undefined) {
+      uusiKoko *= maara;
+    } else uusiKoko /= maara;
+
+    if (uusiKoko <= 100) {
+
+      uusiKoko = Math.ceil(uusiKoko) + 'px';
+      pallo.style.fontSize = uusiKoko;
+    } else poks(pallo);
+  }
+
+  function poks(pallo) {
+    pallo.firstChild.nodeValue = '💥';
+
+  }
+  document.addEventListener('keydown', balloon);
+
+</script>
+
+
+</body>
+</html>
